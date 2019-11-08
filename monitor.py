@@ -263,7 +263,7 @@ def run(date, status):
 def kucun():
 	# true = True
 	# false = False
-	time.sleep(0.5)
+	#time.sleep(0.5)
 	proxy = get_proxy().get("proxy")
 	retry_count = 2
 	while retry_count > 0:

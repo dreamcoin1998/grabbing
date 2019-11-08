@@ -28,7 +28,7 @@ def push_2():
 			'startStation': config.startStation,
 			'terminalStation': config.terminalStation,
 			'flightDate': config.flightDate,
-			'telNumber': config.telNumber,
+			# 'telNumber': config.telNumber,
 			'appointCount': config.appointCount,
 		}
 	)

@@ -1,5 +1,8 @@
 import execjs
 import requests
+import config
+from test_shibie import verify_2
+from duanxin import get_smsCode, get_telNumber, send_yzm
 
 
 def buyjiu(data):
@@ -2423,19 +2426,19 @@ def buyjiu(data):
     token = fuc.call('encryptByDES', key, message)
 
     print(token)
-    import config
-    from test_shibie import verify_2
-
-
     res = s.get('http://www.gzairports.com:11111/order/index.html?from=groupmessage&isappinstalled=0', headers=headers)
     # res = s.get('http://www.gzairports.com:11111/order/creatImgCode.action', headers=headers)
 
     # with open('a.png', 'wb')as w:
     #     w.write(res.content)
-
-    validateCode = verify_2(s, headers)
+    telNumber = get_telNumber() # 获取号码
+    send_yzm(s, data['startStation'], data['terminalStation']) # 发送验证码
+    smsCode = get_smsCode(telNumber) # 获取短信验证码
+    validateCode = verify_2(s, headers) # 获取图片验证码
     data['validateCode'] = validateCode
     data['token'] = token
+    data['telNumber'] = telNumber
+    data['smsCode'] = smsCode
     print(data)
     res = s.post('http://www.gzairports.com:11111/appointment.action', data=data, headers=headers)
     print(res.text)
