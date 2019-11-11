@@ -159,6 +159,9 @@ def delete_proxy(proxy):
 
 # 获取监控状态
 def test(proxy=None):
+	requests.adapters.DEFAULT_RETRIES = 3
+	s = requests.session()
+	s.keep_alive = False
 	retry_count = 2
 	User_Agent = ['Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Mobile Safari/537.36',
 			'Mozilla/5.0 (Linux; U; Android 8.1.0; zh-cn; BLA-AL00 Build/HUAWEIBLA-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36',
@@ -171,9 +174,10 @@ def test(proxy=None):
 	while retry_count > 0:
 		try:
 			if proxy:
-				res = requests.get(url, headers=headers, proxies={"http": "http://{}".format(proxy)}, timeout=2)
+				res = s.get(url, headers=headers, proxies={"http": "http://{}".format(proxy), "https": "https://{}".format(proxy)})
 			else:
-				res = requests.get(url, headers=headers)
+				res = s.get(url, headers=headers)
+			# print(res.text)
 			root = etree.HTML(res.content)
 			date = root.xpath('//*[@id="enroll"]/fieldset/div[9]/div[3]/span/i/text()')
 			status = root.xpath('//*[@id="enroll"]/fieldset/div[9]/div[3]/span/text()')
@@ -186,7 +190,7 @@ def test(proxy=None):
 			return dic
 		except Exception as e:
 			print('出错', e)
-			logging.error(e)
+			# logging.error(e)
 			retry_count -= 1
     # 出错2次, 删除代理池中代理
 	delete_proxy(proxy)
@@ -198,6 +202,7 @@ def run(dic):
 	if dic != {}:
 		while True:
 			proxy = get_proxy().get("proxy")
+			print(proxy)
 			dic_2 = test(proxy=proxy)
 			if dic_2 != {} and dic_2 is not None:
 				print(dic == dic_2)
@@ -316,7 +321,7 @@ def main():
 	# itchat.auto_login(hotReload=True)
 	# delta = 0.5
 	logging.basicConfig(filename='yuyue.log', level=logging.INFO)
-	dic = test()
+	dic = test(proxy=get_proxy().get("proxy"))
 	for i in range(4):
 		p = mp.Process(target=run, args=(dic,))
 		p.start()
