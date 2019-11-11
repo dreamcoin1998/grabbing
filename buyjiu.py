@@ -1,8 +1,9 @@
 import execjs
 import requests
 import config
-from test_shibie import verify_2
+from test_shibie import verify_3
 from duanxin import get_smsCode, get_telNumber, send_yzm
+import logging
 
 
 def buyjiu(data):
@@ -2425,25 +2426,37 @@ def buyjiu(data):
 
     token = fuc.call('encryptByDES', key, message)
 
-    print(token)
+    # print(token)
+    logging.info('token:' + token)
+
     res = s.get('http://www.gzairports.com:11111/order/index.html?from=groupmessage&isappinstalled=0', headers=headers)
     # res = s.get('http://www.gzairports.com:11111/order/creatImgCode.action', headers=headers)
 
     # with open('a.png', 'wb')as w:
     #     w.write(res.content)
     telNumber = get_telNumber() # 获取号码
-    send_yzm(s, data['startStation'], data['terminalStation']) # 发送验证码
-    smsCode = get_smsCode(telNumber) # 获取短信验证码
-    validateCode = verify_2(s, headers) # 获取图片验证码
-    data['validateCode'] = validateCode
-    data['token'] = token
-    data['telNumber'] = telNumber
-    data['smsCode'] = smsCode
-    print(data)
-    res = s.post('http://www.gzairports.com:11111/appointment.action', data=data, headers=headers)
-    print(res.text)
-    with open('res.html', 'wb')as w:
-        w.write(res.content)
-    return res.json()['result']['success']
-
-# buyjiu()
+    logging.info('号码为:' + telNumber)
+    res = send_yzm(s, telNumber, data['startStation'], data['terminalStation']) # 发送验证码
+    # print(res)
+    if res == False:
+        from push import push_2
+        logging.info('验证码发送失败')
+        push_2()
+        return False
+    else:
+        smsCode = get_smsCode(telNumber) # 获取短信验证码
+        logging.info('提取的短信验证码为：' + smsCode)
+        validateCode = verify_3(s, headers) # 获取图片验证码
+        logging.info('图片验证码为：' + validateCode)
+        data['validateCode'] = validateCode
+        data['token'] = token
+        data['telNumber'] = '15259695263'
+        data['smsCode'] = smsCode
+        print(data)
+        logging.info('最终提交的数据为：' + data)
+        res = s.post('http://www.gzairports.com:11111/appointment.action', data=data, headers=headers)
+        print(res.text)
+        logging.info('最终返回结果：' + res.text)
+        with open('res.html', 'wb')as w:
+            w.write(res.content)
+        return res.json()['result']['success']

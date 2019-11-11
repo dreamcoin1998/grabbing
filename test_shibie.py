@@ -40,23 +40,21 @@ def verify(items):
 
 
 # 参数：一个requests.Session对象, 代理IP
-def verify_2(s, headers):
+def verify_2(s, proxy, headers):
+	url = 'http://kwemobile.bceapp.com/maotai.php/index/verify?time=' + str(random.random())
+	print(s.cookies)
 	now = datetime.now()
 	time = str(int(datetime.timestamp(now)))
-	url = 'http://www.gzairports.com:11111/order/creatImgCode.action?d=' + time
-	print(s.cookies)
 	userID = '118006'
 	pd_key = 'Fhq9N8NsY7M3TEQ6HonzKCaXDX3nuHa7'
-	predict_type = '40500'
+	predict_type = '10500'
 	md5 = hashlib.md5()
 	md5.update(f'{time}{pd_key}'.encode('utf-8'))
 	n = md5.hexdigest()
 	md5 = hashlib.md5()
 	md5.update(f'{userID}{time}{n}'.encode('utf-8'))
 	sign = md5.hexdigest()
-	res = s.get(url, headers=headers, timeout=2)
-	with open('a.png', 'wb')as w:
-		w.write(res.content)
+	res = s.get(url, headers=headers, proxies={"http": "http://{}".format(proxy)}, timeout=2)
 	b64 = base64.b64encode(res.content)
 	img_data = b64.decode('utf-8')
 	headers = {'Content-type': 'application/x-www-form-urlencoded'}
@@ -69,19 +67,24 @@ def verify_2(s, headers):
 # verify('code.png')
 
 
-def verrify_3(content):
+def verify_3(s, headers):
 	now = datetime.now()
 	time = str(int(datetime.timestamp(now)))
+	url = 'http://www.gzairports.com:11111/order/creatImgCode.action?d=' + time
+	print(s.cookies)
 	userID = '118006'
 	pd_key = 'Fhq9N8NsY7M3TEQ6HonzKCaXDX3nuHa7'
-	predict_type = '40500'
+	predict_type = '30400'
 	md5 = hashlib.md5()
 	md5.update(f'{time}{pd_key}'.encode('utf-8'))
 	n = md5.hexdigest()
 	md5 = hashlib.md5()
 	md5.update(f'{userID}{time}{n}'.encode('utf-8'))
 	sign = md5.hexdigest()
-	b64 = base64.b64encode(content)
+	res = s.get(url, headers=headers, timeout=2)
+	with open('a.png', 'wb')as w:
+		w.write(res.content)
+	b64 = base64.b64encode(res.content)
 	img_data = b64.decode('utf-8')
 	headers = {'Content-type': 'application/x-www-form-urlencoded'}
 	data = {'user_id': userID, 'timestamp': time, 'sign': sign, 'predict_type': predict_type, 'img_data': img_data}
