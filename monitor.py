@@ -149,12 +149,19 @@ class UntitledTestCase(unittest.TestCase):
 
 # 获取代理IP
 def get_proxy():
-    return requests.get("http://www.gaoblog.cn:5010/get/").json()
-
+	try:
+		return requests.get("http://www.gaoblog.cn:5010/get/").json()
+	except Exception as e:
+		logging.error(e)
+		pass
 
 #出错两次删除IP
 def delete_proxy(proxy):
-    requests.get("http://www.gaoblog.cn:5010/delete/?proxy={}".format(proxy))
+	try:
+		requests.get("http://www.gaoblog.cn:5010/delete/?proxy={}".format(proxy))
+	except Exception as e:
+		logging.error(e)
+		pass
 
 
 # 获取监控状态
@@ -174,7 +181,7 @@ def test(proxy=None):
 	while retry_count > 0:
 		try:
 			if proxy:
-				res = s.get(url, headers=headers, proxies={"http": "http://{}".format(proxy), "https": "https://{}".format(proxy)})
+				res = s.get(url, headers=headers, proxies={"http": "http://{}".format(proxy)}, timeout=3)
 			else:
 				res = s.get(url, headers=headers)
 			# print(res.text)
@@ -321,7 +328,9 @@ def main():
 	# itchat.auto_login(hotReload=True)
 	# delta = 0.5
 	logging.basicConfig(filename='yuyue.log', level=logging.INFO)
-	dic = test(proxy=get_proxy().get("proxy"))
+	proxy = get_proxy().get("proxy")
+	print(proxy)
+	dic = test(proxy=proxy)
 	for i in range(4):
 		p = mp.Process(target=run, args=(dic,))
 		p.start()
