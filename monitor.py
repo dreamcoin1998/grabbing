@@ -83,7 +83,7 @@ def interface(data, proxy=None):
 	except Exception as e:
 		push_1(data=str(data))
 		print('出错', e)
-		logging.error('interface '+ e)
+		logging.error(e)
 		# interface(data)
 		return 1
 
@@ -153,7 +153,7 @@ def get_proxy():
 		return requests.get("http://www.gaoblog.cn:5010/get/").json()
 	except Exception as e:
 		logging.error(e)
-		pass
+		return {'proxy': None}
 
 #出错两次删除IP
 def delete_proxy(proxy):
@@ -185,9 +185,11 @@ def test(proxy=None):
 			else:
 				res = s.get(url, headers=headers)
 			# print(res.text)
+			# with open('res.html', 'w')as f:
+				# f.write(res.text)
 			root = etree.HTML(res.content)
-			date = root.xpath('//*[@id="enroll"]/fieldset/div[9]/div[3]/span/i/text()')
-			status = root.xpath('//*[@id="enroll"]/fieldset/div[9]/div[3]/span/text()')
+			date = root.xpath('//*[@id="enroll"]/fieldset/div[9]/div[2]/span/i/text()')
+			status = root.xpath('//*[@id="enroll"]/fieldset/div[9]/div[2]/span/text()')
 			# print(date)
 			# print(status)
 			dic = {}
@@ -211,6 +213,7 @@ def run(dic):
 			proxy = get_proxy().get("proxy")
 			print(proxy)
 			dic_2 = test(proxy=proxy)
+			dic_2 = {'11月21日 下午': '可预约'}
 			if dic_2 != {} and dic_2 is not None:
 				print(dic == dic_2)
 				# 信息不一致，页面更新，启动脚本
@@ -221,27 +224,29 @@ def run(dic):
 					data = get_yuyue()
 					if data is not None:
 						logging.info(str(t1) + ' 页面已更新')
-						if data['enroll_date'] == []:
+						if data['enroll-date'] == []:
 							logging.info('不指定日期')
 							for k, v in dic_2.items():
 								if v != '已约满':
-									data['enroll_date'] = k
-							# unittest.main()
+									data['enroll-date'] = k
+							# unittest.main(
 							interface(data, proxy=proxy)
 						else:
 							### 轮询的方式
-							dates = data.get('enroll_date')
+							dates = data.get('enroll-date')
 							for day in dates:
-								status = dic_2[day]
-								logging.info('当日状态：' + status)
+								status = dic_2.get(day)
+								# logging.info('当日状态：' + status)
 								if status != '已约满':
-									data['enroll_date'] = day
+									data['enroll-date'] = day
 									interface(data, proxy=proxy)
 									break
-							push_1(data=str(data))
+						push_1(data=str(data))
 					else:
 						print('未预约')
 			else:
+				# delete_proxy(proxy)
+				# print('删除代理')
 				print('为空')
 				# time.sleep(delta)
 

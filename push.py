@@ -16,7 +16,7 @@ def push_1(data=None):
 				 'setoff': config.setoff,
 				 'arrive': config.arrive,
 				 'flt-date': config.flt_date,
-				 'enroll_date': config.enroll_date,
+				 'enroll-date': config.enroll_date,
 				 'service': 'on',
 				 'secret': 'on'})
 	r.rpush('yuyue', data)
@@ -41,6 +41,18 @@ def push_2(data=None):
 	r.rpush('mylist', data)
 
 
+def get():
+	r = redis.Redis(host='127.0.0.1', port=6379)
+	res = r.lpop('yuyue')
+	data = eval(res.decode('utf8'))
+	if data.get('enroll_date') is not None:
+		data['enroll-date'] = data.pop('enroll_date')
+		push_1(str(data))
+		get()
+	# print(data)
+
+
 if __name__ == '__main__':
 	# push_2()
 	push_1()
+	# get()
